@@ -21,6 +21,7 @@ import odinclient.setting.type.BooleanSetting;
 import odinclient.setting.type.EnumSetting;
 import odinclient.setting.type.IntSetting;
 import odinclient.setting.type.NumberSetting;
+import odinclient.util.RotationUtils;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -282,12 +283,12 @@ public final class AimAssist extends Module {
 
                                 if (this.horizontal.getValue()
                                         && (!this.stopAtTargetHorizontal.getValue() || !onTarget)) {
-                                    this.mc.player.setYaw(newYaw);
+                                    RotationUtils.applyYaw(newYaw);
                                 }
 
                                 if (this.vertical.getValue()
                                         && (!this.stopAtTargetVertical.getValue() || !onTarget)) {
-                                    this.mc.player.setPitch(newPitch);
+                                    RotationUtils.applyPitch(newPitch);
                                 }
                             }
                         }

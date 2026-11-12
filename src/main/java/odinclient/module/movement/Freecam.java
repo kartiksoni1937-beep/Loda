@@ -18,6 +18,7 @@ import odinclient.setting.Setting;
 import odinclient.setting.SettingGroup;
 import odinclient.setting.type.BooleanSetting;
 import odinclient.setting.type.NumberSetting;
+import odinclient.util.RotationUtils;
 import odinclient.util.input.MouseKeyBindState;
 
 import org.joml.Vector3d;
@@ -127,10 +128,7 @@ public final class Freecam extends Module {
     @Override
     public void onDeactivate() {
         if (this.mc.player != null) {
-            this.mc.player.setYaw(this.playerYaw);
-            this.mc.player.setPitch(this.playerPitch);
-            this.mc.player.setHeadYaw(this.playerYaw);
-            this.mc.player.setBodyYaw(this.playerYaw);
+            RotationUtils.restoreRotation(this.playerYaw, this.playerPitch, true);
         }
 
         this.mc.options.setPerspective(
@@ -145,10 +143,7 @@ public final class Freecam extends Module {
     @EventHandler
     private void onTickPre(TickEvent.Pre event) {
         if (this.mc.player != null) {
-            this.mc.player.setYaw(this.playerYaw);
-            this.mc.player.setPitch(this.playerPitch);
-            this.mc.player.setHeadYaw(this.playerYaw);
-            this.mc.player.setBodyYaw(this.playerYaw);
+            RotationUtils.restoreRotation(this.playerYaw, this.playerPitch, true);
         }
     }
 

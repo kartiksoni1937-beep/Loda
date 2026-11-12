@@ -110,6 +110,16 @@ public final class InventoryActions {
         }
     }
 
+    public static boolean clickSlot(
+            MinecraftClient client, int syncId, int slot, int button, SlotActionType action) {
+        if (!isReady(client) || slot < 0 || action == null) {
+            return false;
+        } else {
+            client.interactionManager.clickSlot(syncId, slot, button, action, client.player);
+            return true;
+        }
+    }
+
     public static void placeBlock(MinecraftClient client, BlockHitResult hitResult) {
         if (isReady(client) && hitResult != null) {
             client.interactionManager.interactBlock(client.player, Hand.MAIN_HAND, hitResult);

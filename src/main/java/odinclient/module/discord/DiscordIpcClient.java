@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.concurrent.locks.LockSupport;
 
 public final class DiscordIpcClient {
     private static final String CLIENT_ID = "1537649590495481927";
@@ -113,12 +114,12 @@ public final class DiscordIpcClient {
                             break;
                         }
                     } else {
-                        Thread.sleep(250L);
+                        LockSupport.parkNanos(250_000_000L);
+                        if (Thread.currentThread().isInterrupted()) {
+                            return;
+                        }
                     }
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
             } catch (IOException ignored) {
             } finally {
                 synchronized (STATE_LOCK) {
@@ -131,10 +132,8 @@ public final class DiscordIpcClient {
             }
 
             if (isCurrentSession(id)) {
-                try {
-                    Thread.sleep(5000L);
-                } catch (InterruptedException interrupted) {
-                    Thread.currentThread().interrupt();
+                LockSupport.parkNanos(5_000_000_000L);
+                if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
             }

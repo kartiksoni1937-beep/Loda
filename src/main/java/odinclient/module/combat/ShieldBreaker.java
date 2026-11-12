@@ -18,6 +18,7 @@ import odinclient.setting.Setting;
 import odinclient.setting.type.BooleanSetting;
 import odinclient.setting.type.IntSetting;
 import odinclient.setting.type.NumberSetting;
+import odinclient.util.WorldUtils;
 
 @Environment(EnvType.CLIENT)
 public final class ShieldBreaker extends Module {
@@ -92,7 +93,7 @@ public final class ShieldBreaker extends Module {
                     this.previousSlot = this.mc.player.getInventory().getSelectedSlot();
                     this.axeSlot = slot;
                     this.mc.player.getInventory().setSelectedSlot(slot);
-                    this.mc.interactionManager.attackEntity(this.mc.player, target);
+                    WorldUtils.hitEntity(target);
                     this.mc.player.swingHand(Hand.MAIN_HAND);
                     this.mc.player.resetTicksSinceLastAttack();
                     this.attacked = true;

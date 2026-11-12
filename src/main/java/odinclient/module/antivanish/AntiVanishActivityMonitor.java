@@ -46,6 +46,7 @@ import odinclient.event.WorldLeaveEvent;
 import odinclient.module.ModuleContext;
 import odinclient.module.automation.AutoLog;
 import odinclient.module.hud.regionmap.RegionMapLayout;
+import odinclient.util.PacketUtils;
 
 import java.util.ArrayDeque;
 import java.util.EnumSet;
@@ -283,9 +284,8 @@ public final class AntiVanishActivityMonitor {
                 }
 
                 this.pendingProbes.put(probeId, now);
-                mc.getNetworkHandler()
-                        .sendPacket(
-                                new RequestCommandCompletionsC2SPacket(probeId, "minecraft:msg "));
+                PacketUtils.send(
+                        new RequestCommandCompletionsC2SPacket(probeId, "minecraft:msg "));
             }
         } else {
             if (this.active) {

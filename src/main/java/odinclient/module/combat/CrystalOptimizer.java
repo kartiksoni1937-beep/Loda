@@ -17,6 +17,7 @@ import odinclient.event.TickEvent;
 import odinclient.module.Category;
 import odinclient.module.Module;
 import odinclient.util.InventoryActions;
+import odinclient.util.WorldUtils;
 
 @Environment(EnvType.CLIENT)
 public final class CrystalOptimizer extends Module {
@@ -56,7 +57,7 @@ public final class CrystalOptimizer extends Module {
                     if (target instanceof EntityHitResult) {
                         Entity entity = ((EntityHitResult) target).getEntity();
                         if (entity instanceof EndCrystalEntity) {
-                            this.mc.interactionManager.attackEntity(this.mc.player, entity);
+                            WorldUtils.hitEntity(entity);
                             this.mc.player.swingHand(Hand.MAIN_HAND);
                             this.cooldown = 0;
                             return;

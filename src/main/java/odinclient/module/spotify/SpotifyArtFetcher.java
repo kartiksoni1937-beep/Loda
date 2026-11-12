@@ -21,6 +21,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -124,11 +126,21 @@ final class SpotifyArtFetcher {
                 break;
             }
 
+            long remaining = deadline - System.nanoTime();
+            if (remaining <= 0L) {
+                break;
+            }
+
             try {
-                Thread.sleep(3332484562204090045L ^ 3332484562204090025L);
+                CompletableFuture.anyOf(localArt, mediaArt)
+                        .get(
+                                Math.min(remaining, TimeUnit.MILLISECONDS.toNanos(20L)),
+                                TimeUnit.NANOSECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return new byte[0];
+            } catch (TimeoutException | ExecutionException ignored) {
+                // keep polling until the deadline
             }
         }
 

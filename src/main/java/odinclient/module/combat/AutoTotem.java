@@ -12,6 +12,7 @@ import odinclient.module.Module;
 import odinclient.setting.Setting;
 import odinclient.setting.type.IntSetting;
 import odinclient.setting.type.NumberSetting;
+import odinclient.util.InventoryActions;
 
 @Environment(EnvType.CLIENT)
 public final class AutoTotem extends Module {
@@ -65,12 +66,12 @@ public final class AutoTotem extends Module {
                             if (totemSlot != -1) {
                                 int slot = totemSlot < 9 ? 36 + totemSlot : totemSlot;
                                 int syncId = this.mc.player.playerScreenHandler.syncId;
-                                this.mc.interactionManager.clickSlot(
-                                        syncId, slot, 0, SlotActionType.PICKUP, this.mc.player);
-                                this.mc.interactionManager.clickSlot(
-                                        syncId, 45, 0, SlotActionType.PICKUP, this.mc.player);
-                                this.mc.interactionManager.clickSlot(
-                                        syncId, slot, 0, SlotActionType.PICKUP, this.mc.player);
+                                InventoryActions.clickSlot(
+                                        this.mc, syncId, slot, 0, SlotActionType.PICKUP);
+                                InventoryActions.clickSlot(
+                                        this.mc, syncId, 45, 0, SlotActionType.PICKUP);
+                                InventoryActions.clickSlot(
+                                        this.mc, syncId, slot, 0, SlotActionType.PICKUP);
                             }
                         }
                     }

@@ -119,14 +119,12 @@ public final class HoverTotem extends Module {
     }
 
     private void swapToOffhand(int syncId, int slotId) {
-        this.mc.interactionManager.clickSlot(
-                syncId, slotId, 40, SlotActionType.SWAP, this.mc.player);
+        InventoryActions.clickSlot(this.mc, syncId, slotId, 40, SlotActionType.SWAP);
         this.resetDelay();
     }
 
     private void swapToHotbar(int syncId, int slotId, int hotbarIndex) {
-        this.mc.interactionManager.clickSlot(
-                syncId, slotId, hotbarIndex, SlotActionType.SWAP, this.mc.player);
+        InventoryActions.clickSlot(this.mc, syncId, slotId, hotbarIndex, SlotActionType.SWAP);
         this.resetDelay();
     }
 

@@ -30,6 +30,7 @@ import odinclient.module.Module;
 import odinclient.setting.Setting;
 import odinclient.setting.SettingGroup;
 import odinclient.setting.type.NumberSetting;
+import odinclient.util.WorldUtils;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -168,7 +169,7 @@ public class AutoCrystal extends Module {
         } else if (crystal.isAlive()
                 && !crystal.isRemoved()
                 && this.isCrystalUnderCrosshair(client, crystal)) {
-            client.interactionManager.attackEntity(client.player, crystal);
+            WorldUtils.hitEntity(crystal);
             client.player.swingHand(Hand.MAIN_HAND);
             this.breakTimer = this.breakTimer + this.breakDelay.getValue();
             return true;
@@ -282,7 +283,7 @@ public class AutoCrystal extends Module {
 
     private static void interactBlock(
             MinecraftClient client, BlockHitResult hit, Hand hand, boolean swing) {
-        if (client.interactionManager.interactBlock(client.player, hand, hit).isAccepted()
+        if (WorldUtils.interactBlock(hit, hand)
                 && swing) {
             client.player.swingHand(hand);
         }
