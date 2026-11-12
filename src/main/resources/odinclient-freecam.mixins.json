@@ -1,0 +1,16 @@
+{
+  "required": false,
+  "package": "odinclient.mixin.freecam",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "FreecamCameraMixin",
+    "FreecamEntityMixin",
+    "FreecamKeyboardInputMixin",
+    "FreecamPlayerTickMixin",
+    "FreecamScrollMixin",
+    "InputAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

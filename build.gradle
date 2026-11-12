@@ -1,0 +1,51 @@
+plugins {
+    id 'fabric-loom' version '1.15.5'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://maven.fabricmc.net/' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // The two Fabric API modules the mod ships with, bundled into the jar.
+    include modImplementation("net.fabricmc.fabric-api:fabric-api-base:${project.fabric_api_base_version}")
+    include modImplementation("net.fabricmc.fabric-api:fabric-resource-loader-v1:${project.fabric_resource_loader_version}")
+}
+
+loom {
+    accessWidenerPath = file('src/main/resources/odinclient.accesswidener')
+    mixin {
+        useLegacyMixinAp = true
+        defaultRefmapName = 'odinclient-refmap.json'
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+    it.options.encoding = 'UTF-8'
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
