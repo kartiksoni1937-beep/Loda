@@ -18,24 +18,21 @@ public final class Sprint extends Module {
     }
 
     @EventHandler
-    private void onTick(TickEvent.Post event) {
+    private void onTick(TickEvent.Pre event) {
         if (this.mc.player != null && this.mc.player.input != null) {
             Vec2f input = this.mc.player.input.getMovementInput();
             boolean moving =
                     input != null && (Math.abs(input.x) > 0.001F || Math.abs(input.y) > 0.001F);
             if (moving) {
                 this.ticksSinceMoving = 0;
-                if (!this.sprintStarted) {
-                    this.sprintStarted = true;
-                    if (!this.mc.player.isSprinting()) {
-                        this.mc.player.setSprinting(true);
-                    }
-                }
+                this.sprintStarted = true;
+                this.mc.options.sprintKey.setPressed(true);
             } else {
                 this.ticksSinceMoving++;
                 if (this.ticksSinceMoving >= STOP_DELAY_TICKS) {
                     this.ticksSinceMoving = STOP_DELAY_TICKS;
                     this.sprintStarted = false;
+                    this.mc.options.sprintKey.setPressed(false);
                 }
             }
         }
@@ -45,5 +42,8 @@ public final class Sprint extends Module {
     public void onDeactivate() {
         this.sprintStarted = false;
         this.ticksSinceMoving = 6;
+        if (this.mc != null && this.mc.options != null) {
+            this.mc.options.sprintKey.setPressed(false);
+        }
     }
 }

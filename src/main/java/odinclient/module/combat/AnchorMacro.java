@@ -14,6 +14,7 @@ import odinclient.module.Module;
 import odinclient.setting.Setting;
 import odinclient.setting.type.IntSetting;
 import odinclient.util.InventoryActions;
+import odinclient.util.WorldUtils;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -101,6 +102,9 @@ public final class AnchorMacro extends Module {
                         if (!InventoryActions.selectItem(this.mc, Items.GLOWSTONE)) {
                             return;
                         }
+
+                        // Swap on this tick, place on the next one.
+                        return;
                     }
 
                     if (this.glowstoneTicks++ < this.glowstoneDelay.getValue()) {
@@ -118,7 +122,9 @@ public final class AnchorMacro extends Module {
                         }
 
                         this.switchTicks = 0;
-                        this.mc.player.getInventory().setSelectedSlot(slot);
+                        WorldUtils.setHotbarSlot(slot);
+                        // Swap on this tick, detonate on the next one.
+                        return;
                     }
 
                     if (this.explodeTicks++ < this.explodeDelay.getValue()) {

@@ -9,6 +9,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
+import odinclient.mixin.accessor.SelectedSlotSyncInvoker;
+
 import java.util.function.BooleanSupplier;
 
 /**
@@ -27,9 +29,6 @@ public final class WorldUtils {
     /** Maximum block interaction distance. */
     public static final double BLOCK_REACH = 4.5;
 
-    private static Object lastActionKey;
-    private static long lastActionTick = Long.MIN_VALUE;
-
     private WorldUtils() {}
 
     /** Attacks {@code target}. Returns {@code true} when the attack was performed. */
@@ -44,11 +43,14 @@ public final class WorldUtils {
             return false;
         }
 
-        if (!acquireActionLock(client, target)) {
+        if (!ActionLock.claim()) {
             return false;
         }
 
-        RotationUtils.sendRotationBeforeInteract(target.getBoundingBox().getCenter());
+        if (!RotationUtils.sendRotationBeforeInteract(target.getBoundingBox().getCenter())) {
+            ActionLock.release();
+            return false;
+        }
         return perform(
                 () -> {
                     client.interactionManager.attackEntity(player, target);
@@ -73,12 +75,44 @@ public final class WorldUtils {
             return false;
         }
 
-        if (!acquireActionLock(client, hit.getBlockPos())) {
+        if (!ActionLock.claim()) {
             return false;
         }
 
-        RotationUtils.sendRotationBeforeInteract(hitPos);
+        if (!RotationUtils.sendRotationBeforeInteract(hitPos)) {
+            ActionLock.release();
+            return false;
+        }
+
         return perform(() -> client.interactionManager.interactBlock(player, hand, hit).isAccepted());
+    }
+
+    /**
+     * Switches the selected hotbar slot. Only the vanilla selected-slot sync happens here; no
+     * movement packet is produced, the vanilla client already sends its own each tick.
+     */
+    public static boolean setHotbarSlot(int slot) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        ClientPlayerEntity player = ready(client);
+        if (player == null || slot < 0 || slot > 8) {
+            return false;
+        }
+
+        if (player.getInventory().getSelectedSlot() == slot) {
+            return false;
+        }
+
+        if (!ActionLock.claim()) {
+            return false;
+        }
+
+        return perform(
+                () -> {
+                    player.getInventory().setSelectedSlot(slot);
+                    ((SelectedSlotSyncInvoker) client.interactionManager)
+                            .odinclient$syncSelectedSlot();
+                    return true;
+                });
     }
 
     /** Places a block at {@code pos} if the position can take one. */
@@ -115,11 +149,15 @@ public final class WorldUtils {
             return false;
         }
 
-        if (!acquireActionLock(client, pos)) {
+        if (!ActionLock.claim()) {
             return false;
         }
 
-        RotationUtils.sendRotationBeforeInteract(center);
+        if (!RotationUtils.sendRotationBeforeInteract(center)) {
+            ActionLock.release();
+            return false;
+        }
+
         return perform(() -> client.interactionManager.breakBlock(pos));
     }
 
@@ -132,6 +170,10 @@ public final class WorldUtils {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = ready(client);
         if (player == null || player.getStackInHand(hand).isEmpty()) {
+            return false;
+        }
+
+        if (!ActionLock.claim()) {
             return false;
         }
 
@@ -159,22 +201,6 @@ public final class WorldUtils {
         }
 
         return client.player;
-    }
-
-    /** One action per target per tick: distinct targets still act, repeats are dropped. */
-    private static boolean acquireActionLock(MinecraftClient client, Object key) {
-        long tick = client.player == null ? 0L : client.player.age;
-        if (tick != lastActionTick) {
-            lastActionTick = tick;
-            lastActionKey = null;
-        }
-
-        if (key.equals(lastActionKey)) {
-            return false;
-        }
-
-        lastActionKey = key;
-        return true;
     }
 
 }

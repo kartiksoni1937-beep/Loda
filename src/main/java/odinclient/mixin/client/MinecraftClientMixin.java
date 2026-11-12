@@ -17,6 +17,7 @@ import odinclient.manager.ConfigStore;
 import odinclient.manager.ModuleManager;
 import odinclient.module.Module;
 import odinclient.module.ModuleContext;
+import odinclient.util.ActionLock;
 import odinclient.util.ActionScheduler;
 import odinclient.module.automation.FastPlace;
 import odinclient.module.combat.AutoCrystal;
@@ -54,6 +55,7 @@ public abstract class MinecraftClientMixin {
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void odinclient$preTick(CallbackInfo ci) {
+        ActionLock.clear();
         this.odinclient$updateWorldState();
         ActionScheduler.beginTickStart((MinecraftClient) (Object) this);
         ModuleContext.EVENT_BUS.post(new TickEvent.Pre());

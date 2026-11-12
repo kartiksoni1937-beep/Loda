@@ -94,9 +94,17 @@ public final class MaceSwap extends Module {
 
     public static void onAttack() {
         MaceSwap module = instance;
-        if (module != null && module.isActive()) {
+        if (module != null && module.isActive() && module.isCritReady()) {
             module.swapToMace();
         }
+    }
+
+    /** Mace crits only land while falling, off the ground and with a charged attack. */
+    private boolean isCritReady() {
+        return this.mc.player != null
+                && this.mc.player.fallDistance > 0.0F
+                && !this.mc.player.isOnGround()
+                && this.mc.player.getAttackCooldownProgress(0.5F) > 0.9F;
     }
 
     @Override

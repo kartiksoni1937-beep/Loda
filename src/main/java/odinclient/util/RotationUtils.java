@@ -52,7 +52,8 @@ public final class RotationUtils {
         float yawStep = clamp(wrapDegrees(yaw - player.getYaw()), -YAW_CAP, YAW_CAP);
         float pitchStep = clamp(pitch - player.getPitch(), -PITCH_CAP, PITCH_CAP);
         if (Math.abs(yawStep) < DEDUPE_DELTA && Math.abs(pitchStep) < DEDUPE_DELTA) {
-            return false;
+            // Already aimed: nothing to apply, but the caller may proceed with its action.
+            return true;
         }
 
         float finalYaw = player.getYaw() + yawStep;

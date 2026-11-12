@@ -90,9 +90,15 @@ public final class ShieldBreaker extends Module {
                             < this.minStrength.getValue())) {
                 int slot = this.findBestAxeSlot();
                 if (slot != -1) {
-                    this.previousSlot = this.mc.player.getInventory().getSelectedSlot();
-                    this.axeSlot = slot;
-                    this.mc.player.getInventory().setSelectedSlot(slot);
+                    if (this.mc.player.getInventory().getSelectedSlot() != slot) {
+                        this.previousSlot = this.mc.player.getInventory().getSelectedSlot();
+                        this.axeSlot = slot;
+                        WorldUtils.setHotbarSlot(slot);
+                        // Swap on this tick, attack on the next one so the server sees the
+                        // item change before the attack.
+                        return;
+                    }
+
                     WorldUtils.hitEntity(target);
                     this.mc.player.swingHand(Hand.MAIN_HAND);
                     this.mc.player.resetTicksSinceLastAttack();
