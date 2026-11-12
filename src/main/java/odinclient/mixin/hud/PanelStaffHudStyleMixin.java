@@ -28,7 +28,7 @@ public abstract class PanelStaffHudStyleMixin {
                     @At(
                             value = "INVOKE",
                             target =
-                                    "Lodinclient/module/StaffTracker;drawRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
+                                    "Lodinclient/module/hud/StaffTracker;drawRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
                             ordinal = 0),
             index = 6)
     private int odinclient$hideStaffOuterBorder(int color) {
@@ -41,7 +41,7 @@ public abstract class PanelStaffHudStyleMixin {
                     @At(
                             value = "INVOKE",
                             target =
-                                    "Lodinclient/module/StaffTracker;drawRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
+                                    "Lodinclient/module/hud/StaffTracker;drawRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
                             ordinal = 1),
             index = 6)
     private int odinclient$darkStaffSurface(int color) {
@@ -54,7 +54,7 @@ public abstract class PanelStaffHudStyleMixin {
                     @At(
                             value = "INVOKE",
                             target =
-                                    "Lodinclient/module/StaffTracker;drawRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
+                                    "Lodinclient/module/hud/StaffTracker;drawRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
                             ordinal = 2),
             index = 6)
     private int odinclient$hideStaffHeaderLine(int color) {

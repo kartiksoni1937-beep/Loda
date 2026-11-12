@@ -28,7 +28,7 @@ public abstract class PanelRegionMapStyleMixin {
                     @At(
                             value = "INVOKE",
                             target =
-                                    "Lodinclient/module/RegionMap;fillRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
+                                    "Lodinclient/module/hud/regionmap/RegionMap;fillRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
                             ordinal = 0),
             index = 6)
     private int odinclient$hideRegionOuterBorder(int color) {
@@ -41,7 +41,7 @@ public abstract class PanelRegionMapStyleMixin {
                     @At(
                             value = "INVOKE",
                             target =
-                                    "Lodinclient/module/RegionMap;fillRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
+                                    "Lodinclient/module/hud/regionmap/RegionMap;fillRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
                             ordinal = 1),
             index = 6)
     private int odinclient$darkRegionSurface(int color) {
@@ -54,7 +54,7 @@ public abstract class PanelRegionMapStyleMixin {
                     @At(
                             value = "INVOKE",
                             target =
-                                    "Lodinclient/module/RegionMap;fillRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
+                                    "Lodinclient/module/hud/regionmap/RegionMap;fillRoundedRect(Lnet/minecraft/client/gui/DrawContext;IIIIII)V",
                             ordinal = 2),
             index = 6)
     private int odinclient$hideRegionHeaderLine(int color) {

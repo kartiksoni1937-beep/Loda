@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/attach-release-asset.yml"
+      - "release/odinclient-1.3.0.jar"
   workflow_dispatch:
 
 permissions:
