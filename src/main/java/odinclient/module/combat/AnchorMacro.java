@@ -67,6 +67,7 @@ public final class AnchorMacro extends Module {
     private int switchTicks;
     private int glowstoneTicks;
     private int explodeTicks;
+    private int placeWait;
 
     public AnchorMacro(Category category) {
         super(
@@ -83,6 +84,11 @@ public final class AnchorMacro extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (this.placeWait > 0) {
+            this.placeWait--;
+            return;
+        }
+
         if (InventoryActions.isReady(this.mc)
                 && this.mc.currentScreen == null
                 && this.isUseButtonHeld()
@@ -113,6 +119,9 @@ public final class AnchorMacro extends Module {
 
                     this.glowstoneTicks = 0;
                     InventoryActions.placeBlock(this.mc, hit);
+                    // Never place twice in the same tick.
+                    this.placeWait = 1;
+                    return;
                 } else {
                     this.glowstoneTicks = 0;
                     int slot = this.totemSlot.getValue() - 1;
@@ -133,6 +142,9 @@ public final class AnchorMacro extends Module {
 
                     this.explodeTicks = 0;
                     InventoryActions.placeBlock(this.mc, hit);
+                    // Never place twice in the same tick.
+                    this.placeWait = 1;
+                    return;
                 }
             } else {
                 this.resetDelays();
@@ -150,5 +162,6 @@ public final class AnchorMacro extends Module {
         this.switchTicks = 0;
         this.glowstoneTicks = 0;
         this.explodeTicks = 0;
+        this.placeWait = 0;
     }
 }

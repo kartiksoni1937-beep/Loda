@@ -16,6 +16,7 @@ import odinclient.setting.Setting;
 import odinclient.setting.type.BooleanSetting;
 import odinclient.setting.type.IntSetting;
 import odinclient.util.EntityUtils;
+import odinclient.util.WorldUtils;
 
 @Environment(EnvType.CLIENT)
 public final class MaceSwap extends Module {
@@ -28,6 +29,8 @@ public final class MaceSwap extends Module {
     private final Setting<Integer> switchDelay;
     private int previousSlot = -1;
     private int switchBackTicks = -1;
+    private net.minecraft.entity.Entity pendingTarget;
+    private int pendingSwapTicks;
 
     public MaceSwap(Category category) {
         super(category, "mace-swap", "Switches to a mace when attacking.");
@@ -92,11 +95,59 @@ public final class MaceSwap extends Module {
                                         .build());
     }
 
-    public static void onAttack() {
+    /**
+     * Handles the vanilla attack click. Swaps to the mace and cancels the hit; the hit itself is
+     * issued on the following tick so the server processes the slot change first.
+     *
+     * @return {@code true} when the vanilla hit must be cancelled
+     */
+    public static boolean onAttack() {
         MaceSwap module = instance;
-        if (module != null && module.isActive() && module.isCritReady()) {
-            module.swapToMace();
+        return module != null && module.isActive() && module.beginSwapOnClick();
+    }
+
+    private boolean beginSwapOnClick() {
+        if (this.mc.player == null
+                || this.mc.world == null
+                || this.mc.currentScreen != null
+                || !this.isCritReady()) {
+            return false;
         }
+
+        if (!(this.mc.crosshairTarget
+                instanceof net.minecraft.util.hit.EntityHitResult entityHit)) {
+            return false;
+        }
+
+        net.minecraft.entity.Entity target = entityHit.getEntity();
+        if (target == null || target == this.mc.player || target.isRemoved()) {
+            return false;
+        }
+
+        String itemPath = getItemPath(this.mc.player.getMainHandStack());
+        if (this.onlySword.getValue() && !itemPath.endsWith("_sword")) {
+            return false;
+        }
+
+        if (this.onlyAxe.getValue() && !itemPath.endsWith("_axe")) {
+            return false;
+        }
+
+        int maceSlot = this.findMaceSlot();
+        if (maceSlot < 0 || maceSlot == this.mc.player.getInventory().getSelectedSlot()) {
+            return false;
+        }
+
+        this.previousSlot = this.mc.player.getInventory().getSelectedSlot();
+        if (!WorldUtils.setHotbarSlot(maceSlot)) {
+            this.previousSlot = -1;
+            return false;
+        }
+
+        this.pendingTarget = target;
+        this.pendingSwapTicks = 1;
+        this.switchBackTicks = this.switchDelay.getValue() + 1;
+        return true;
     }
 
     /** Mace crits only land while falling, off the ground and with a charged attack. */
@@ -120,28 +171,27 @@ public final class MaceSwap extends Module {
 
     @EventHandler
     private void onTickStart(TickEvent.Pre event) {
+        if (this.pendingTarget != null) {
+            if (this.pendingSwapTicks-- > 0) {
+                // Slot change happened on the previous tick; attack on this one.
+                return;
+            }
+
+            net.minecraft.entity.Entity target = this.pendingTarget;
+            this.pendingTarget = null;
+            if (target.isRemoved()
+                    || !this.isCritReady()
+                    || !this.mc.player.getMainHandStack().isOf(Items.MACE)) {
+                return;
+            }
+
+            WorldUtils.hitEntity(target, true);
+            return;
+        }
+
         if (this.switchBackTicks >= 0 && this.switchBackEnabled.getValue()) {
             if (this.switchBackTicks-- == 0) {
                 this.switchBack();
-            }
-        }
-    }
-
-    private void swapToMace() {
-        if (this.mc.player != null
-                && this.mc.world != null
-                && this.mc.interactionManager != null
-                && this.mc.currentScreen == null) {
-            String itemPath = getItemPath(this.mc.player.getMainHandStack());
-            if (!this.onlySword.getValue() || itemPath.endsWith("_sword")) {
-                if (!this.onlyAxe.getValue() || itemPath.endsWith("_axe")) {
-                    int maceSlot = this.findMaceSlot();
-                    if (maceSlot >= 0) {
-                        this.previousSlot = this.mc.player.getInventory().getSelectedSlot();
-                        this.selectSlot(maceSlot);
-                        this.switchBackTicks = this.switchDelay.getValue();
-                    }
-                }
             }
         }
     }

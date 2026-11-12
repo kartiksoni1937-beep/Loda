@@ -43,6 +43,7 @@ public class AutoCrystal extends Module {
     private final Setting<Double> placeDelay;
     private double breakTimer;
     private double placeTimer;
+    private int placeWait;
     private BlockPos lastPlacePos;
     private int lastBrokenCrystalId = -1;
     private boolean wasActing;
@@ -150,6 +151,10 @@ public class AutoCrystal extends Module {
     }
 
     private void tryPlaceCrystal(MinecraftClient client, BlockHitResult hit, BlockPos pos) {
+        if (this.placeWait > 0) {
+            return;
+        }
+
         if (!client.world.getBlockState(hit.getBlockPos().up()).isAir()) {
             return;
         }
@@ -167,6 +172,9 @@ public class AutoCrystal extends Module {
                         interactBlock(client, hit, hand, true);
                         this.lastPlacePos = pos;
                         this.placeTimer = this.placeTimer + this.placeDelay.getValue();
+                        // One placement per tick, and nothing else this tick.
+                        this.placeWait = 1;
+                        return;
                     }
                 }
             }
@@ -306,6 +314,10 @@ public class AutoCrystal extends Module {
 
         if (this.placeTimer > 0.0) {
             this.placeTimer--;
+        }
+
+        if (this.placeWait > 0) {
+            this.placeWait--;
         }
     }
 

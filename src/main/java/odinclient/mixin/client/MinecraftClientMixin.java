@@ -85,9 +85,12 @@ public abstract class MinecraftClientMixin {
         }
     }
 
-    @Inject(method = "doAttack", at = @At("HEAD"))
+    @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
     private void odinclient$beforeAttack(CallbackInfoReturnable<Boolean> cir) {
-        MaceSwap.onAttack();
+        if (MaceSwap.onAttack()) {
+            // The swap is sent this tick; the hit is re-issued on the following tick.
+            cir.setReturnValue(false);
+        }
     }
 
     @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)

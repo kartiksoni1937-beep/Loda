@@ -58,6 +58,20 @@ public final class WorldUtils {
                 });
     }
 
+    /** Attacks {@code target} and optionally swings the arm, matching a vanilla attack. */
+    public static boolean hitEntity(Entity target, boolean swing) {
+        if (!hitEntity(target)) {
+            return false;
+        }
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (swing && client != null && client.player != null) {
+            client.player.swingHand(Hand.MAIN_HAND);
+        }
+
+        return true;
+    }
+
     /** Interacts with the block described by {@code hit}. */
     public static boolean interactBlock(BlockHitResult hit, Hand hand) {
         if (hit == null || hand == null) {
