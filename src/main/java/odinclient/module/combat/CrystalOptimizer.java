@@ -17,7 +17,7 @@ import odinclient.event.TickEvent;
 import odinclient.module.Category;
 import odinclient.module.Module;
 import odinclient.util.InventoryActions;
-import odinclient.util.WorldUtils;
+import odinclient.util.InputSimulator;
 
 @Environment(EnvType.CLIENT)
 public final class CrystalOptimizer extends Module {
@@ -43,7 +43,7 @@ public final class CrystalOptimizer extends Module {
     }
 
     @EventHandler
-    private void onTick(TickEvent.Post event) {
+    private void onTick(TickEvent.Pre event) {
         if (InventoryActions.isReady(this.mc) && this.mc.currentScreen == null) {
             boolean attacking = this.mc.options.attackKey.isPressed();
             boolean using = this.mc.options.useKey.isPressed();
@@ -57,8 +57,7 @@ public final class CrystalOptimizer extends Module {
                     if (target instanceof EntityHitResult) {
                         Entity entity = ((EntityHitResult) target).getEntity();
                         if (entity instanceof EndCrystalEntity) {
-                            WorldUtils.hitEntity(entity);
-                            this.mc.player.swingHand(Hand.MAIN_HAND);
+                            InputSimulator.click(InputSimulator.Click.LEFT);
                             this.cooldown = 0;
                             return;
                         }

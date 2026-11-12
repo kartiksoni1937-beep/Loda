@@ -101,7 +101,7 @@ public final class AutoInvTotem extends Module {
     }
 
     @EventHandler
-    private void onTick(TickEvent.Post event) {
+    private void onTick(TickEvent.Pre event) {
         if (!InventoryActions.isReady(this.mc)) {
             this.reset();
         } else {

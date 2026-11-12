@@ -77,7 +77,7 @@ public final class ShieldBreaker extends Module {
     }
 
     @EventHandler
-    private void onTick(TickEvent.Post event) {
+    private void onTick(TickEvent.Pre event) {
         PlayerEntity target = this.getBlockingTarget();
         if (target == null) {
             this.restoreSlot();

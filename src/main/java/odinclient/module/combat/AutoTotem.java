@@ -52,7 +52,7 @@ public final class AutoTotem extends Module {
     }
 
     @EventHandler
-    private void onTick(TickEvent.Post event) {
+    private void onTick(TickEvent.Pre event) {
         if (this.mc.player != null
                 && this.mc.interactionManager != null
                 && this.mc.currentScreen == null) {

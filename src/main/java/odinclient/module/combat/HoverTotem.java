@@ -81,7 +81,7 @@ public final class HoverTotem extends Module {
     }
 
     @EventHandler
-    private void onTick(TickEvent.Post event) {
+    private void onTick(TickEvent.Pre event) {
         if (InventoryActions.isReady(this.mc)
                 && this.mc.currentScreen instanceof InventoryScreen screen) {
             if (this.autoSwitch.getValue()) {

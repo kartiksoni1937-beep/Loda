@@ -111,7 +111,7 @@ public final class MaceSwap extends Module {
     }
 
     @EventHandler
-    private void onPostTick(TickEvent.Post event) {
+    private void onTickStart(TickEvent.Pre event) {
         if (this.switchBackTicks >= 0 && this.switchBackEnabled.getValue()) {
             if (this.switchBackTicks-- == 0) {
                 this.switchBack();

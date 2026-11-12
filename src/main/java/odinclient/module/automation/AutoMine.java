@@ -7,6 +7,7 @@ import odinclient.event.EventHandler;
 import odinclient.event.TickEvent;
 import odinclient.module.Category;
 import odinclient.module.Module;
+import odinclient.util.InputSimulator;
 
 @Environment(EnvType.CLIENT)
 public final class AutoMine extends Module {
@@ -20,20 +21,24 @@ public final class AutoMine extends Module {
 
     @Override
     public void onActivate() {
-        this.setAttackPressed(true);
+        this.holdAttack();
     }
 
     @Override
     public void onDeactivate() {
-        this.setAttackPressed(false);
+        if (this.mc != null && this.mc.options != null) {
+            InputSimulator.release(this.mc.options.attackKey);
+        }
     }
 
     @EventHandler
-    private void onTick(TickEvent.Post event) {
-        this.setAttackPressed(true);
+    private void onTick(TickEvent.Pre event) {
+        this.holdAttack();
     }
 
-    private void setAttackPressed(boolean pressed) {
-        this.mc.options.attackKey.setPressed(pressed);
+    private void holdAttack() {
+        if (this.mc != null && this.mc.options != null) {
+            InputSimulator.hold(this.mc.options.attackKey, 2);
+        }
     }
 }

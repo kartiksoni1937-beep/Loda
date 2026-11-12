@@ -9,6 +9,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.function.BooleanSupplier;
+
 /**
  * Single choke point for world interactions (attacks, block/item interactions).
  *
@@ -47,8 +49,11 @@ public final class WorldUtils {
         }
 
         RotationUtils.sendRotationBeforeInteract(target.getBoundingBox().getCenter());
-        client.interactionManager.attackEntity(player, target);
-        return true;
+        return perform(
+                () -> {
+                    client.interactionManager.attackEntity(player, target);
+                    return true;
+                });
     }
 
     /** Interacts with the block described by {@code hit}. */
@@ -73,7 +78,7 @@ public final class WorldUtils {
         }
 
         RotationUtils.sendRotationBeforeInteract(hitPos);
-        return client.interactionManager.interactBlock(player, hand, hit).isAccepted();
+        return perform(() -> client.interactionManager.interactBlock(player, hand, hit).isAccepted());
     }
 
     /** Places a block at {@code pos} if the position can take one. */
@@ -115,7 +120,7 @@ public final class WorldUtils {
         }
 
         RotationUtils.sendRotationBeforeInteract(center);
-        return client.interactionManager.breakBlock(pos);
+        return perform(() -> client.interactionManager.breakBlock(pos));
     }
 
     /** Uses the held item ({@code hand}) against the world. */
@@ -130,7 +135,19 @@ public final class WorldUtils {
             return false;
         }
 
-        return client.interactionManager.interactItem(player, hand).isAccepted();
+        return perform(() -> client.interactionManager.interactItem(player, hand).isAccepted());
+    }
+
+    /**
+     * Runs the action at the start of the tick. Actions requested after the start-of-tick window
+     * are queued for the next tick and reported as accepted.
+     */
+    private static boolean perform(BooleanSupplier action) {
+        if (ActionScheduler.isTickStart()) {
+            return action.getAsBoolean();
+        }
+
+        return ActionScheduler.runAtTickStart(() -> action.getAsBoolean());
     }
 
     private static ClientPlayerEntity ready(MinecraftClient client) {

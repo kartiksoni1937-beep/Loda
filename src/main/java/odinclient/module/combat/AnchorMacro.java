@@ -81,7 +81,7 @@ public final class AnchorMacro extends Module {
     }
 
     @EventHandler
-    private void onTick(TickEvent.Post event) {
+    private void onTick(TickEvent.Pre event) {
         if (InventoryActions.isReady(this.mc)
                 && this.mc.currentScreen == null
                 && this.isUseButtonHeld()

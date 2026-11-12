@@ -19,7 +19,7 @@ import odinclient.setting.Setting;
 import odinclient.setting.SettingGroup;
 import odinclient.setting.type.BooleanSetting;
 import odinclient.setting.type.EnumSetting;
-import odinclient.util.WorldUtils;
+import odinclient.util.InputSimulator;
 import odinclient.setting.type.IntSetting;
 
 import java.util.Random;
@@ -91,7 +91,7 @@ public final class Triggerbot extends Module {
     }
 
     @EventHandler
-    private void onPreTick(TickEvent.Pre event) {
+    private void onTickStart(TickEvent.Pre event) {
         if (this.mc.player != null
                 && this.mc.interactionManager != null
                 && this.mc.currentScreen == null) {
@@ -123,8 +123,7 @@ public final class Triggerbot extends Module {
                             && !(this.mc.player.getAttackCooldownProgress(0.5F) < 1.0F)) {
                         this.tickCounter++;
                         if (this.tickCounter >= this.requiredTicks) {
-                            WorldUtils.hitEntity(target);
-                            this.mc.player.swingHand(Hand.MAIN_HAND);
+                            InputSimulator.click(InputSimulator.Click.LEFT);
                             this.tickCounter = 0;
                             this.rollAttackDelay();
                         }

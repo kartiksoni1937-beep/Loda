@@ -114,9 +114,14 @@ public final class InventoryActions {
             MinecraftClient client, int syncId, int slot, int button, SlotActionType action) {
         if (!isReady(client) || slot < 0 || action == null) {
             return false;
-        } else {
+        } else if (ActionScheduler.isTickStart()) {
             client.interactionManager.clickSlot(syncId, slot, button, action, client.player);
             return true;
+        } else {
+            return ActionScheduler.runAtTickStart(
+                    () ->
+                            client.interactionManager.clickSlot(
+                                    syncId, slot, button, action, client.player));
         }
     }
 
