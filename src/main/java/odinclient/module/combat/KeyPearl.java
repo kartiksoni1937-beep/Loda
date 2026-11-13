@@ -5,6 +5,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.util.Hand;
 
 import odinclient.event.EventHandler;
 import odinclient.event.TickEvent;
@@ -15,7 +16,7 @@ import odinclient.setting.SettingGroup;
 import odinclient.setting.type.BooleanSetting;
 import odinclient.setting.type.IntSetting;
 import odinclient.setting.type.KeybindSetting;
-import odinclient.util.InputSimulator;
+import odinclient.util.WorldUtils;
 import odinclient.util.InventoryUtils;
 
 import org.lwjgl.glfw.GLFW;
@@ -151,7 +152,7 @@ public final class KeyPearl extends Module {
             this.resetState();
         } else {
             // Use the held pearl through the vanilla use key; vanilla swings and sends the use.
-            InputSimulator.use();
+            WorldUtils.interactItem(Hand.MAIN_HAND);
 
             if (this.switchBackEnabled.getValue()) {
                 this.switchTicksLeft = Math.max(0, this.switchDelay.getValue() - 1);

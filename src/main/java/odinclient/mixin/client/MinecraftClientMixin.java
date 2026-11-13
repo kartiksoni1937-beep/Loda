@@ -18,6 +18,7 @@ import odinclient.manager.ModuleManager;
 import odinclient.module.Module;
 import odinclient.module.ModuleContext;
 import odinclient.util.ActionLock;
+import odinclient.util.ActionQueue;
 import odinclient.util.ActionScheduler;
 import odinclient.module.automation.FastPlace;
 import odinclient.module.combat.MaceSwap;
@@ -55,6 +56,8 @@ public abstract class MinecraftClientMixin {
     @Inject(method = "tick", at = @At("HEAD"))
     private void odinclient$preTick(CallbackInfo ci) {
         ActionLock.clear();
+        // Start of the client tick: run at most one queued world action.
+        ActionQueue.tick((MinecraftClient) (Object) this);
         this.odinclient$updateWorldState();
         ActionScheduler.beginTickStart((MinecraftClient) (Object) this);
         ModuleContext.EVENT_BUS.post(new TickEvent.Pre());

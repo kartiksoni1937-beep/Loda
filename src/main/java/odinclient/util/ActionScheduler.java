@@ -29,8 +29,6 @@ public final class ActionScheduler {
     public static void beginTickStart(MinecraftClient client) {
         tickStart = true;
         try {
-            InputSimulator.beginTick();
-
             int budget = MAX_ACTIONS_PER_TICK;
             while (!PENDING.isEmpty() && budget-- > 0) {
                 runSafely(PENDING.poll());

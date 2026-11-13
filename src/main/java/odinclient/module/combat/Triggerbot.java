@@ -19,8 +19,8 @@ import odinclient.setting.Setting;
 import odinclient.setting.SettingGroup;
 import odinclient.setting.type.BooleanSetting;
 import odinclient.setting.type.EnumSetting;
-import odinclient.util.InputSimulator;
 import odinclient.setting.type.IntSetting;
+import odinclient.util.WorldUtils;
 
 import java.util.Random;
 
@@ -123,7 +123,7 @@ public final class Triggerbot extends Module {
                             && !(this.mc.player.getAttackCooldownProgress(0.5F) < 1.0F)) {
                         this.tickCounter++;
                         if (this.tickCounter >= this.requiredTicks) {
-                            InputSimulator.attack();
+                            WorldUtils.hitEntity(target);
                             this.tickCounter = 0;
                             this.rollAttackDelay();
                         }

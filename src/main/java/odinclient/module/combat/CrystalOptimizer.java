@@ -17,7 +17,7 @@ import odinclient.event.TickEvent;
 import odinclient.module.Category;
 import odinclient.module.Module;
 import odinclient.util.InventoryActions;
-import odinclient.util.InputSimulator;
+import odinclient.util.WorldUtils;
 
 @Environment(EnvType.CLIENT)
 public final class CrystalOptimizer extends Module {
@@ -57,7 +57,7 @@ public final class CrystalOptimizer extends Module {
                     if (target instanceof EntityHitResult) {
                         Entity entity = ((EntityHitResult) target).getEntity();
                         if (entity instanceof EndCrystalEntity) {
-                            InputSimulator.click(InputSimulator.Click.LEFT);
+                            WorldUtils.hitEntity(entity);
                             this.cooldown = 0;
                             return;
                         }
