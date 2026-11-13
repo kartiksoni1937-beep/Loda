@@ -5,21 +5,22 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
-import odinclient.mixin.accessor.SelectedSlotSyncInvoker;
-
 import java.util.function.BooleanSupplier;
 
 /**
- * Single choke point for world interactions (attacks, block/item interactions).
+ * Single choke point for world interactions.
  *
- * <p>Every entry point validates the client state, enforces vanilla-scale reach
- * ({@link #ENTITY_REACH} for entities, {@link #BLOCK_REACH} for blocks), rotates the player
- * toward the target before acting, and runs through an action lock so the same target cannot be
- * acted on twice within one tick.
+ * <p>No interaction method and no packet is built here either: every action is a press on the
+ * vanilla attack or use key. This class only decides <em>when</em> a press is allowed, by checking
+ * state, vanilla-scale reach ({@link #ENTITY_REACH} / {@link #BLOCK_REACH}), aiming first, and
+ * claiming {@link ActionLock} so at most one action happens per tick. The packets themselves come
+ * from the vanilla input handling that reads those keys.
  */
 public final class WorldUtils {
 
@@ -31,7 +32,7 @@ public final class WorldUtils {
 
     private WorldUtils() {}
 
-    /** Attacks {@code target}. Returns {@code true} when the attack was performed. */
+    /** Attacks {@code target} through the vanilla attack key. */
     public static boolean hitEntity(Entity target) {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = ready(client);
@@ -47,32 +48,26 @@ public final class WorldUtils {
             return false;
         }
 
-        if (!RotationUtils.sendRotationBeforeInteract(target.getBoundingBox().getCenter())) {
+        if (!RotationUtils.sendRotationBeforeInteract(target.getBoundingBox().getCenter())
+                || !aimsAtEntity(client, target)) {
             ActionLock.release();
             return false;
         }
-        return perform(
-                () -> {
-                    client.interactionManager.attackEntity(player, target);
-                    return true;
-                });
-    }
 
-    /** Attacks {@code target} and optionally swings the arm, matching a vanilla attack. */
-    public static boolean hitEntity(Entity target, boolean swing) {
-        if (!hitEntity(target)) {
+        if (!InputSimulator.attack()) {
+            ActionLock.release();
             return false;
-        }
-
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (swing && client != null && client.player != null) {
-            client.player.swingHand(Hand.MAIN_HAND);
         }
 
         return true;
     }
 
-    /** Interacts with the block described by {@code hit}. */
+    /**
+     * Interacts with the block described by {@code hit} through the vanilla use key.
+     *
+     * <p>The vanilla client applies the held item to whatever the crosshair is on, so the
+     * interaction is only allowed when the refreshed crosshair resolves to the same block.
+     */
     public static boolean interactBlock(BlockHitResult hit, Hand hand) {
         if (hit == null || hand == null) {
             return false;
@@ -93,17 +88,23 @@ public final class WorldUtils {
             return false;
         }
 
-        if (!RotationUtils.sendRotationBeforeInteract(hitPos)) {
+        if (!RotationUtils.sendRotationBeforeInteract(hitPos)
+                || !aimsAtBlock(client, hit.getBlockPos())) {
             ActionLock.release();
             return false;
         }
 
-        return perform(() -> client.interactionManager.interactBlock(player, hand, hit).isAccepted());
+        if (!InputSimulator.use()) {
+            ActionLock.release();
+            return false;
+        }
+
+        return true;
     }
 
     /**
-     * Switches the selected hotbar slot. Only the vanilla selected-slot sync happens here; no
-     * movement packet is produced, the vanilla client already sends its own each tick.
+     * Switches the selected hotbar slot. Only the inventory field changes; the vanilla client sends
+     * the slot packet itself, exactly as it does for the 1-9 keys.
      */
     public static boolean setHotbarSlot(int slot) {
         MinecraftClient client = MinecraftClient.getInstance();
@@ -120,16 +121,10 @@ public final class WorldUtils {
             return false;
         }
 
-        return perform(
-                () -> {
-                    player.getInventory().setSelectedSlot(slot);
-                    ((SelectedSlotSyncInvoker) client.interactionManager)
-                            .odinclient$syncSelectedSlot();
-                    return true;
-                });
+        return perform(() -> InventoryUtils.selectHotbarSlot(slot));
     }
 
-    /** Places a block at {@code pos} if the position can take one. */
+    /** Places a block at {@code pos} through the vanilla use key. */
     public static boolean placeBlock(BlockPos pos, Hand hand) {
         if (pos == null) {
             return false;
@@ -141,12 +136,15 @@ public final class WorldUtils {
             return false;
         }
 
-        BlockHitResult hit =
-                new BlockHitResult(Vec3d.ofCenter(pos), Direction.UP, pos, false);
+        BlockHitResult hit = new BlockHitResult(Vec3d.ofCenter(pos), Direction.UP, pos, false);
         return interactBlock(hit, hand);
     }
 
-    /** Breaks the block at {@code pos}. */
+    /**
+     * Keeps the vanilla attack key held for {@code ticks} so the vanilla client mines the block at
+     * {@code pos}. Mining is the one action that needs the key down across ticks rather than a
+     * single press.
+     */
     public static boolean breakBlock(BlockPos pos) {
         if (pos == null) {
             return false;
@@ -167,15 +165,16 @@ public final class WorldUtils {
             return false;
         }
 
-        if (!RotationUtils.sendRotationBeforeInteract(center)) {
+        if (!RotationUtils.sendRotationBeforeInteract(center)
+                || !aimsAtBlock(client, pos)) {
             ActionLock.release();
             return false;
         }
 
-        return perform(() -> client.interactionManager.breakBlock(pos));
+        return InputSimulator.hold(client.options.attackKey, 2);
     }
 
-    /** Uses the held item ({@code hand}) against the world. */
+    /** Uses the held item through the vanilla use key. */
     public static boolean interactItem(Hand hand) {
         if (hand == null) {
             return false;
@@ -191,7 +190,44 @@ public final class WorldUtils {
             return false;
         }
 
-        return perform(() -> client.interactionManager.interactItem(player, hand).isAccepted());
+        if (!InputSimulator.use()) {
+            ActionLock.release();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Recomputes the vanilla crosshair for the rotation applied above. Without this the crosshair
+     * still describes the previous rotation, and a key press would act on the wrong target.
+     */
+    private static boolean aimsAtEntity(MinecraftClient client, Entity target) {
+        if (!refreshCrosshair(client)) {
+            return false;
+        }
+
+        HitResult hit = client.crosshairTarget;
+        return hit instanceof EntityHitResult entityHit
+                && (entityHit.getEntity() == target || entityHit.getEntity().getId() == target.getId());
+    }
+
+    private static boolean aimsAtBlock(MinecraftClient client, BlockPos pos) {
+        if (!refreshCrosshair(client)) {
+            return false;
+        }
+
+        HitResult hit = client.crosshairTarget;
+        return hit instanceof BlockHitResult blockHit && blockHit.getBlockPos().equals(pos);
+    }
+
+    private static boolean refreshCrosshair(MinecraftClient client) {
+        if (client.gameRenderer == null) {
+            return false;
+        }
+
+        client.gameRenderer.updateCrosshairTarget(1.0F);
+        return client.crosshairTarget != null;
     }
 
     /**

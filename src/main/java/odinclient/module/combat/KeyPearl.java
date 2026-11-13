@@ -5,11 +5,9 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.util.Hand;
 
 import odinclient.event.EventHandler;
 import odinclient.event.TickEvent;
-import odinclient.mixin.accessor.SelectedSlotSyncInvoker;
 import odinclient.module.Category;
 import odinclient.module.Module;
 import odinclient.setting.Setting;
@@ -17,6 +15,8 @@ import odinclient.setting.SettingGroup;
 import odinclient.setting.type.BooleanSetting;
 import odinclient.setting.type.IntSetting;
 import odinclient.setting.type.KeybindSetting;
+import odinclient.util.InputSimulator;
+import odinclient.util.InventoryUtils;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -92,7 +92,7 @@ public final class KeyPearl extends Module {
     private void onTick(TickEvent.Pre event) {
         if (this.mc.player != null
                 && this.mc.world != null
-                && this.mc.interactionManager != null
+                && this.mc.getNetworkHandler() != null
                 && this.mc.getWindow() != null) {
             int key = this.activateKey.getValue();
             boolean down = this.isKeyDown(key);
@@ -150,12 +150,8 @@ public final class KeyPearl extends Module {
             this.switchBack();
             this.resetState();
         } else {
-            if (this.mc
-                    .interactionManager
-                    .interactItem(this.mc.player, Hand.MAIN_HAND)
-                    .isAccepted()) {
-                this.mc.player.swingHand(Hand.MAIN_HAND);
-            }
+            // Use the held pearl through the vanilla use key; vanilla swings and sends the use.
+            InputSimulator.use();
 
             if (this.switchBackEnabled.getValue()) {
                 this.switchTicksLeft = Math.max(0, this.switchDelay.getValue() - 1);
@@ -186,17 +182,13 @@ public final class KeyPearl extends Module {
     }
 
     private void switchBack() {
-        if (this.previousSlot >= 0
-                && this.previousSlot <= 8
-                && this.mc.player != null
-                && this.mc.interactionManager != null) {
+        if (this.previousSlot >= 0 && this.previousSlot <= 8 && this.mc.player != null) {
             this.selectSlot(this.previousSlot);
         }
     }
 
     private void selectSlot(int slot) {
-        this.mc.player.getInventory().setSelectedSlot(slot);
-        ((SelectedSlotSyncInvoker) this.mc.interactionManager).odinclient$syncSelectedSlot();
+        InventoryUtils.selectHotbarSlot(slot);
     }
 
     private boolean isKeyDown(int key) {

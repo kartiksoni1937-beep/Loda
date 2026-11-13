@@ -20,7 +20,6 @@ import odinclient.module.ModuleContext;
 import odinclient.util.ActionLock;
 import odinclient.util.ActionScheduler;
 import odinclient.module.automation.FastPlace;
-import odinclient.module.combat.AutoCrystal;
 import odinclient.module.combat.MaceSwap;
 import odinclient.module.render.visual.SwingSpeed;
 import odinclient.ui.screen.IntroSplashScreen;
@@ -76,13 +75,6 @@ public abstract class MinecraftClientMixin {
     @Inject(method = "doItemUse", at = @At("RETURN"))
     private void odinclient$postItemUse(CallbackInfo ci) {
         FastPlace.applyFastPlace((MinecraftClient) (Object) this);
-    }
-
-    @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
-    private void odinclient$cancelAutoCrystalItemUse(CallbackInfo ci) {
-        if (AutoCrystal.isActing()) {
-            ci.cancel();
-        }
     }
 
     @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)

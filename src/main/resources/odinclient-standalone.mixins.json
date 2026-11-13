@@ -7,6 +7,7 @@
     "accessor.GuiGraphicsAccessor",
     "accessor.HandledScreenAccessor",
     "accessor.ItemGlowLayerAccessor",
+    "accessor.KeyBindingAccessor",
     "accessor.MinecraftClientAccessor",
     "accessor.RenderPipelinesAccessor",
     "accessor.SelectedSlotSyncInvoker",

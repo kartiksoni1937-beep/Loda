@@ -6,7 +6,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 
@@ -99,9 +98,8 @@ public final class ShieldBreaker extends Module {
                         return;
                     }
 
+                    // Vanilla swings and resets the attack cooldown for the simulated press.
                     WorldUtils.hitEntity(target);
-                    this.mc.player.swingHand(Hand.MAIN_HAND);
-                    this.mc.player.resetTicksSinceLastAttack();
                     this.attacked = true;
                 }
             }
@@ -111,7 +109,7 @@ public final class ShieldBreaker extends Module {
     private PlayerEntity getBlockingTarget() {
         if (this.mc.player != null
                 && this.mc.world != null
-                && this.mc.interactionManager != null
+                && this.mc.getNetworkHandler() != null
                 && this.mc.currentScreen == null) {
             HitResult hit = this.mc.crosshairTarget;
             if (hit instanceof EntityHitResult) {

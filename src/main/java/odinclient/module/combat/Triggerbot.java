@@ -93,7 +93,7 @@ public final class Triggerbot extends Module {
     @EventHandler
     private void onTickStart(TickEvent.Pre event) {
         if (this.mc.player != null
-                && this.mc.interactionManager != null
+                && this.mc.getNetworkHandler() != null
                 && this.mc.currentScreen == null) {
             if (this.mc.crosshairTarget != null
                     && this.mc.crosshairTarget.getType() == Type.ENTITY) {
@@ -123,7 +123,7 @@ public final class Triggerbot extends Module {
                             && !(this.mc.player.getAttackCooldownProgress(0.5F) < 1.0F)) {
                         this.tickCounter++;
                         if (this.tickCounter >= this.requiredTicks) {
-                            InputSimulator.click(InputSimulator.Click.LEFT);
+                            InputSimulator.attack();
                             this.tickCounter = 0;
                             this.rollAttackDelay();
                         }

@@ -73,8 +73,7 @@ public final class InventoryActions {
         if (slot < 0) {
             return false;
         } else {
-            client.player.getInventory().setSelectedSlot(slot);
-            return true;
+            return InventoryUtils.selectHotbarSlot(slot);
         }
     }
 
@@ -125,10 +124,10 @@ public final class InventoryActions {
         }
     }
 
+    /** Places on {@code hitResult} by pressing the vanilla use key; vanilla swings and sends it. */
     public static void placeBlock(MinecraftClient client, BlockHitResult hitResult) {
         if (isReady(client) && hitResult != null) {
-            client.interactionManager.interactBlock(client.player, Hand.MAIN_HAND, hitResult);
-            client.player.swingHand(Hand.MAIN_HAND);
+            WorldUtils.interactBlock(hitResult, Hand.MAIN_HAND);
         }
     }
 

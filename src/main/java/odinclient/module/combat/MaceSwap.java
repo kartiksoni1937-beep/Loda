@@ -9,13 +9,13 @@ import net.minecraft.registry.Registries;
 
 import odinclient.event.EventHandler;
 import odinclient.event.TickEvent;
-import odinclient.mixin.accessor.SelectedSlotSyncInvoker;
 import odinclient.module.Category;
 import odinclient.module.Module;
 import odinclient.setting.Setting;
 import odinclient.setting.type.BooleanSetting;
 import odinclient.setting.type.IntSetting;
 import odinclient.util.EntityUtils;
+import odinclient.util.InventoryUtils;
 import odinclient.util.WorldUtils;
 
 @Environment(EnvType.CLIENT)
@@ -185,7 +185,7 @@ public final class MaceSwap extends Module {
                 return;
             }
 
-            WorldUtils.hitEntity(target, true);
+            WorldUtils.hitEntity(target);
             return;
         }
 
@@ -221,10 +221,7 @@ public final class MaceSwap extends Module {
     }
 
     private void switchBack() {
-        if (this.previousSlot >= 0
-                && this.previousSlot <= 8
-                && this.mc.player != null
-                && this.mc.interactionManager != null) {
+        if (this.previousSlot >= 0 && this.previousSlot <= 8 && this.mc.player != null) {
             this.selectSlot(this.previousSlot);
         }
 
@@ -233,8 +230,7 @@ public final class MaceSwap extends Module {
     }
 
     private void selectSlot(int slot) {
-        this.mc.player.getInventory().setSelectedSlot(slot);
-        ((SelectedSlotSyncInvoker) this.mc.interactionManager).odinclient$syncSelectedSlot();
+        InventoryUtils.selectHotbarSlot(slot);
     }
 
     private static String getItemPath(ItemStack stack) {

@@ -12,13 +12,13 @@ import odinclient.event.EventHandler;
 import odinclient.event.TickEvent;
 import odinclient.event.WorldJoinEvent;
 import odinclient.event.WorldLeaveEvent;
-import odinclient.mixin.accessor.SelectedSlotSyncInvoker;
 import odinclient.module.Module;
 import odinclient.module.playerdebug.AutoFireworkTiming;
 import odinclient.setting.Setting;
 import odinclient.setting.SettingGroup;
 import odinclient.setting.type.BooleanSetting;
 import odinclient.setting.type.NumberSetting;
+import odinclient.util.InventoryUtils;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.IntPredicate;
@@ -127,7 +127,7 @@ public final class AutoFirework extends Module {
         if (isFirework(this.mc.player.getMainHandStack())
                 || isFirework(this.mc.player.getOffHandStack())) {
             return true;
-        } else if (this.hotbarSwitch.getValue() && this.mc.interactionManager != null) {
+        } else if (this.hotbarSwitch.getValue() && this.mc.getNetworkHandler() != null) {
             PlayerInventory inventory = this.mc.player.getInventory();
             IntPredicate isFireworkSlot = slot -> isFirework(inventory.getStack(slot));
             int targetSlot =
@@ -135,9 +135,7 @@ public final class AutoFirework extends Module {
             if (targetSlot < 0) {
                 return false;
             } else {
-                inventory.setSelectedSlot(targetSlot);
-                ((SelectedSlotSyncInvoker) this.mc.interactionManager)
-                        .odinclient$syncSelectedSlot();
+                InventoryUtils.selectHotbarSlot(targetSlot);
                 return true;
             }
         } else {

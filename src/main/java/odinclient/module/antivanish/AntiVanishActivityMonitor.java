@@ -16,7 +16,6 @@ import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
-import net.minecraft.network.packet.c2s.play.RequestCommandCompletionsC2SPacket;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.CommandSuggestionsS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
@@ -46,7 +45,6 @@ import odinclient.event.WorldLeaveEvent;
 import odinclient.module.ModuleContext;
 import odinclient.module.automation.AutoLog;
 import odinclient.module.hud.regionmap.RegionMapLayout;
-import odinclient.util.PacketUtils;
 
 import java.util.ArrayDeque;
 import java.util.EnumSet;
@@ -277,16 +275,8 @@ public final class AntiVanishActivityMonitor {
             this.recentParticles.entrySet().removeIf(entry -> now - entry.getValue() > 2000L);
             this.recentExplosions.removeIf(entry -> now - entry.time > 3000L);
             this.pendingProbes.entrySet().removeIf(entry -> now - entry.getValue() > 10000L);
-            if (this.tickCounter % 100 == 0 && this.pendingProbes.size() < 8) {
-                int probeId = this.nextProbeId++;
-                if (this.nextProbeId > 40000) {
-                    this.nextProbeId = 30000;
-                }
-
-                this.pendingProbes.put(probeId, now);
-                PacketUtils.send(
-                        new RequestCommandCompletionsC2SPacket(probeId, "minecraft:msg "));
-            }
+            // No command-completion probe is sent: the client does not build its own packets. The
+            // response side of this check stays, so vanilla traffic is still inspected.
         } else {
             if (this.active) {
                 this.reset();

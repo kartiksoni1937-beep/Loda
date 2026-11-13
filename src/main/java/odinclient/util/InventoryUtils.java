@@ -4,8 +4,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
-import net.minecraft.screen.slot.SlotActionType;
+
+import odinclient.mixin.accessor.SelectedSlotSyncInvoker;
 
 import java.util.function.Predicate;
 
@@ -28,55 +28,21 @@ public final class InventoryUtils {
         return new SlotResult(-1);
     }
 
-    public static boolean selectHotbarSlot(int slot, boolean sendPacket) {
+    /**
+     * Selects a hotbar slot the way the 1-9 keys do: the inventory field changes and the vanilla
+     * client reports the new slot from its own interaction path. No packet is built here.
+     */
+    public static boolean selectHotbarSlot(int slot) {
         MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player != null && slot >= 0 && slot <= 8) {
-            client.player.getInventory().setSelectedSlot(slot);
-            if (client.getNetworkHandler() != null) {
-                client.getNetworkHandler().sendPacket(new UpdateSelectedSlotC2SPacket(slot));
-            }
-
-            return true;
-        } else {
+        if (client.player == null || slot < 0 || slot > 8) {
             return false;
         }
-    }
 
-    public static InventoryUtils.SlotSwapAction swapSlot() {
-        return new InventoryUtils.SlotSwapAction();
-    }
-
-    private static int toContainerSlot(int slot) {
-        return slot >= 0 && slot < 9 ? 36 + slot : slot;
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static final class SlotSwapAction {
-        private int slot = -1;
-
-        public InventoryUtils.SlotSwapAction slot(int containerSlot) {
-            this.slot = containerSlot;
-            return this;
+        client.player.getInventory().setSelectedSlot(slot);
+        if (client.interactionManager != null) {
+            ((SelectedSlotSyncInvoker) client.interactionManager).odinclient$syncSelectedSlot();
         }
 
-        public void swapWithHotbar(int hotbarSlot) {
-            this.sendSwap(hotbarSlot);
-        }
-
-        public void swapWithOffhand() {
-            this.sendSwap(40);
-        }
-
-        private void sendSwap(int button) {
-            MinecraftClient client = MinecraftClient.getInstance();
-            if (client.player != null && client.interactionManager != null && this.slot >= 0) {
-                client.interactionManager.clickSlot(
-                        client.player.currentScreenHandler.syncId,
-                        InventoryUtils.toContainerSlot(this.slot),
-                        button,
-                        SlotActionType.SWAP,
-                        client.player);
-            }
-        }
+        return true;
     }
 }

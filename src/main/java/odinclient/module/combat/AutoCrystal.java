@@ -115,7 +115,7 @@ public class AutoCrystal extends Module {
         if (!this.isActive()
                 || client.player == null
                 || client.world == null
-                || client.interactionManager == null
+                || client.getNetworkHandler() == null
                 || client.currentScreen != null
                 || !client.player.isAlive()
                 || client.player.isSpectator()
@@ -145,11 +145,6 @@ public class AutoCrystal extends Module {
         }
     }
 
-    public static boolean isActing() {
-        AutoCrystal module = instance;
-        return module != null && module.shouldAct();
-    }
-
     private void tryPlaceCrystal(MinecraftClient client, BlockHitResult hit, BlockPos pos) {
         if (this.placeWait > 0) {
             return;
@@ -169,7 +164,7 @@ public class AutoCrystal extends Module {
                 if (this.placeTimer <= 0.0 && canPlaceCrystalAt(client.world, pos)) {
                     Hand hand = this.getCrystalHand(client);
                     if (hand != null) {
-                        interactBlock(client, hit, hand, true);
+                        interactBlock(client, hit, hand);
                         this.lastPlacePos = pos;
                         this.placeTimer = this.placeTimer + this.placeDelay.getValue();
                         // One placement per tick, and nothing else this tick.
@@ -188,7 +183,6 @@ public class AutoCrystal extends Module {
                 && !crystal.isRemoved()
                 && this.isCrystalUnderCrosshair(client, crystal)) {
             WorldUtils.hitEntity(crystal);
-            client.player.swingHand(Hand.MAIN_HAND);
             this.breakTimer = this.breakTimer + this.breakDelay.getValue();
             return true;
         } else {
@@ -299,13 +293,10 @@ public class AutoCrystal extends Module {
         }
     }
 
-    private static void interactBlock(
-            MinecraftClient client, BlockHitResult hit, Hand hand, boolean swing) {
-        if (WorldUtils.interactBlock(hit, hand)
-                && swing) {
-            client.player.swingHand(hand);
-        }
+    private static void interactBlock(MinecraftClient client, BlockHitResult hit, Hand hand) {
+        WorldUtils.interactBlock(hit, hand);
     }
+
 
     private void tickDelays() {
         if (this.breakTimer > 0.0) {

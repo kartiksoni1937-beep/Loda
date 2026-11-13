@@ -54,7 +54,7 @@ public final class AutoTotem extends Module {
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (this.mc.player != null
-                && this.mc.interactionManager != null
+                && this.mc.getNetworkHandler() != null
                 && this.mc.currentScreen == null) {
             if (this.tickCounter++ >= this.delay.getValue()) {
                 this.tickCounter = 0;
